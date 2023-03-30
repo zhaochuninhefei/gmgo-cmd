@@ -23,6 +23,8 @@ var x509Command = &cobra.Command{
 				return err
 			}
 			fmt.Println(text)
+		} else {
+			fmt.Println("缺少参数, 请使用`gmgo-cmd x509 --help`查看帮助信息")
 		}
 
 		return nil
