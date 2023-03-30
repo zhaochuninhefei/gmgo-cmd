@@ -10,7 +10,7 @@ import (
 
 func main() {
 	rootCmd := &cobra.Command{
-		Use:   "go-cmd",
+		Use:   "gmgo-cmd",
 		Short: "gmgo的命令行工具",
 		Long:  "gmgo的命令行工具, 用于提供gmgo各种功能的命令行接口",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -20,6 +20,7 @@ func main() {
 
 	// Add subcommand to root command
 	rootCmd.AddCommand(cmd.VersionCmd())
+	rootCmd.AddCommand(cmd.X509Cmd())
 
 	// Parse command line arguments
 	if err := rootCmd.Execute(); err != nil {
