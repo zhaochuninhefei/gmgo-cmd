@@ -3,7 +3,7 @@ module gitee.com/zhaochuninhefei/gmgo-cmd
 go 1.17
 
 require (
-	gitee.com/zhaochuninhefei/gmgo v0.0.27
+	gitee.com/zhaochuninhefei/gmgo v0.0.28
 	github.com/spf13/cobra v1.6.1
 )
 
