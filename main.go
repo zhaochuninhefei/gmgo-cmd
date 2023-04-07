@@ -21,6 +21,7 @@ func main() {
 	// Add subcommand to root command
 	rootCmd.AddCommand(cmd.VersionCmd())
 	rootCmd.AddCommand(cmd.X509Cmd())
+	rootCmd.AddCommand(cmd.PwdCmd())
 
 	// Parse command line arguments
 	if err := rootCmd.Execute(); err != nil {
