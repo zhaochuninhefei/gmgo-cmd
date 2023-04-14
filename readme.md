@@ -12,13 +12,13 @@ gmgo的命令行工具
 ./build_copy_go_path.sh
 
 # 查看sm2证书
-gmgo-cmd x509 --text --in testdata/sm2_sign_cert.cer
+gmgo-key x509 --text --in testdata/sm2_sign_cert.cer
 
 # 查看ecdsa证书
-gmgo-cmd x509 --text --in testdata/ecdsa_sign_cert.cer
+gmgo-key x509 --text --in testdata/ecdsa_sign_cert.cer
 
 # 查看ecdsaext证书
-gmgo-cmd x509 --text --in testdata/ecdsaext_sign_cert.cer
+gmgo-key x509 --text --in testdata/ecdsaext_sign_cert.cer
 
 ```
 

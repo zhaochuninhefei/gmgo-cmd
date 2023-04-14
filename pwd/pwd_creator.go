@@ -1,4 +1,4 @@
-package cmd
+package pwd
 
 import (
 	"crypto/rand"
@@ -7,8 +7,8 @@ import (
 )
 
 // 用cobra定义一个命令行, 用于生成口令
-// gmgo-cmd pwd --length 16
-// gmgo-cmd pwd -l 16
+// gmgo-key pwd --length 16
+// gmgo-key pwd -l 16
 var pwdCommand = &cobra.Command{
 	Use:   "pwd",
 	Short: "口令生成器",
@@ -18,7 +18,7 @@ var pwdCommand = &cobra.Command{
 			pwd := GeneratePassword(length)
 			println(pwd)
 		} else {
-			println("缺少参数, 请使用`gmgo-cmd pwd --help`查看帮助信息")
+			println("缺少参数, 请使用`gmgo-key pwd --help`查看帮助信息")
 		}
 
 		return nil

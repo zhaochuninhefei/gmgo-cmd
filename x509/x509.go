@@ -1,4 +1,4 @@
-package cmd
+package x509
 
 import (
 	"fmt"
@@ -6,8 +6,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// gmgo-cmd x509 --text --in cert.pem
-// gmgo-cmd x509 -t -i cert.pem
+// gmgo-key x509 --text --in cert.pem
+// gmgo-key x509 -t -i cert.pem
 var x509Command = &cobra.Command{
 	Use:   "x509",
 	Short: "x509相关指令",
@@ -24,7 +24,7 @@ var x509Command = &cobra.Command{
 			}
 			fmt.Println(text)
 		} else {
-			fmt.Println("缺少参数, 请使用`gmgo-cmd x509 --help`查看帮助信息")
+			fmt.Println("缺少参数, 请使用`gmgo-key x509 --help`查看帮助信息")
 		}
 
 		return nil
