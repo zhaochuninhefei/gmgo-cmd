@@ -10,7 +10,7 @@ import (
 var keyCommand = &cobra.Command{
 	Use:   "key",
 	Short: "随机密钥生成器",
-	Long:  `使用gmgo的随机密钥生成器`,
+	Long:  `使用gmgo的随机密钥生成器, 输出指定长度密钥字节数组的Base64编码值`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if length > 0 {
 			key := generateKey(length)
@@ -23,7 +23,6 @@ var keyCommand = &cobra.Command{
 }
 
 // 定义length并从cobra命令行参数中读取赋值
-
 var length int
 
 // KeyCmd returns the Cobra Command for key
@@ -39,5 +38,5 @@ func generateKey(length int) string {
 	if err != nil {
 		panic(err)
 	}
-	return base64.URLEncoding.EncodeToString(randomBytes)[:length]
+	return base64.URLEncoding.EncodeToString(randomBytes)
 }
