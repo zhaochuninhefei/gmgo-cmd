@@ -44,7 +44,7 @@ const (
 	uppercaseLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	lowercaseLetters = "abcdefghijklmnopqrstuvwxyz"
 	digits           = "0123456789"
-	specialChars     = "~!@#$%^&*_-+=\\|(){}[]:;"
+	specialChars     = "~!@#$%^&_-+=|:;" // 去除了一些容易被误解或错误格式化的字符，全面的是 ~!@#$%^&*_-+=\|(){}[]:;"'<>,.?/`
 )
 
 func GeneratePassword(length int, strength int) string {
