@@ -16,7 +16,7 @@ import (
 var pwdCommand = &cobra.Command{
 	Use:   "pwd",
 	Short: "口令生成器",
-	Long:  `使用gmgo的口令生成器`,
+	Long:  `使用gmgo的口令生成器,支持大小写字母、数字和特殊符号。特殊符号支持 ~!@#$%^&_-+=|:;`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if length >= 4 && strength >= 0 {
 			pwd := GeneratePassword(length, strength)
