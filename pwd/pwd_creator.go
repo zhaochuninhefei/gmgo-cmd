@@ -50,8 +50,8 @@ var display string
 func PwdCmd() *cobra.Command {
 	pwdCommand.Flags().IntVarP(&length, "length", "l", 0, "口令长度(至少为4)")
 	pwdCommand.Flags().IntVarP(&strength, "strength", "s", 0, "口令强度(1:大小写字母+数字, 2:大小写字母+数字+特殊符号, 默认:2)")
-	pwdCommand.Flags().StringVarP(&saveKey, "key", "k", "", "口令保存键值，建议格式: `目标域名|用户名`，如`test.com|testuser`")
-	pwdCommand.Flags().StringVarP(&display, "display", "d", "", "显示口令，包含`|`时严格匹配口令键值，不包含`|`时作为口令键值的前缀查找")
+	pwdCommand.Flags().StringVarP(&saveKey, "key", "k", "", "口令保存键值，格式: `用户名@目标域名`，如`testuser@test.com`")
+	pwdCommand.Flags().StringVarP(&display, "display", "d", "", "显示口令，包含`@`时严格匹配口令键值，不包含`@`时作为口令键值的后缀查找")
 	return pwdCommand
 }
 
@@ -111,6 +111,11 @@ func GeneratePassword(length int, strength int) string {
 
 	// 判断是否传入了 key 参数
 	if saveKey != "" {
+		// 检查saveKey是否满足格式: `用户名@目标域名`
+		if !strings.Contains(saveKey, "@") {
+			panic(errors.New("口令保存键值需要满足格式: 用户名@目标域名"))
+		}
+
 		// 读取 PwdFileDir json文件内容，转为 map
 		pwdMap, err := readPwdFile()
 		if err != nil {
@@ -225,8 +230,8 @@ func displayPwd(dispaly string) string {
 		panic(err)
 	}
 
-	// 判断 dispaly 是否包含"|"
-	if strings.Contains(dispaly, "|") {
+	// 判断 dispaly 是否包含"@"
+	if strings.Contains(dispaly, "@") {
 		// 直接尝试从 pwdMap 中获取口令
 		pwd, ok := pwdMap[dispaly]
 		if ok {
@@ -235,10 +240,10 @@ func displayPwd(dispaly string) string {
 			panic(errors.New("口令不存在"))
 		}
 	} else {
-		// 将 dispaly 作为口令键值的前缀，遍历pwdMap查找所有匹配的口令
+		// 将 dispaly 作为口令键值的后缀，遍历pwdMap查找所有匹配的口令
 		var pwdStrArr []string
 		for key, value := range pwdMap {
-			if strings.HasPrefix(key, dispaly) {
+			if strings.HasSuffix(key, dispaly) {
 				pwdStrArr = append(pwdStrArr, key+":"+value)
 			}
 		}
