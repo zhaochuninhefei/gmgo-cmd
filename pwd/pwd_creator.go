@@ -3,6 +3,7 @@ package pwd
 import (
 	"crypto/rand"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/spf13/cobra"
 	"io/ioutil"
@@ -17,6 +18,8 @@ import (
 //  gmgo-key pwd -l 16
 //  gmgo-key pwd --strength 1
 //  gmgo-key pwd -s 1
+//  gmgo-key pwd --display test.com|testuser
+//  gmgo-key pwd -d test.com|testuser
 var pwdCommand = &cobra.Command{
 	Use:   "pwd",
 	Short: "口令生成器",
@@ -24,6 +27,10 @@ var pwdCommand = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if length >= 4 && strength >= 0 {
 			pwd := GeneratePassword(length, strength)
+			println(pwd)
+		} else if display != "" {
+			// 查看口令
+			pwd := displayPwd(display)
 			println(pwd)
 		} else {
 			println("参数不正确, 请使用`gmgo-key pwd --help`查看帮助信息")
@@ -36,6 +43,7 @@ var pwdCommand = &cobra.Command{
 var length int
 var strength int
 var saveKey string
+var display string
 
 // PwdCmd returns the Cobra Command for pwd
 //goland:noinspection GoNameStartsWithPackageName
@@ -43,6 +51,7 @@ func PwdCmd() *cobra.Command {
 	pwdCommand.Flags().IntVarP(&length, "length", "l", 0, "口令长度(至少为4)")
 	pwdCommand.Flags().IntVarP(&strength, "strength", "s", 0, "口令强度(1:大小写字母+数字, 2:大小写字母+数字+特殊符号, 默认:2)")
 	pwdCommand.Flags().StringVarP(&saveKey, "key", "k", "", "口令保存键值，建议格式: `目标域名|用户名`，如`test.com|testuser`")
+	pwdCommand.Flags().StringVarP(&display, "display", "d", "", "显示口令，包含`|`时严格匹配口令键值，不包含`|`时作为口令键值的前缀查找")
 	return pwdCommand
 }
 
@@ -195,4 +204,49 @@ func writePwdFile(pwdMap map[string]string) error {
 		return err
 	}
 	return nil
+}
+
+func displayPwd(dispaly string) string {
+	// 获取当前用户根目录
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
+	filePath := path.Join(homeDir, pwdFileDir)
+	// 读取PwdFileDir文件内容(json格式)
+	content, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		panic(err)
+	}
+	// 将文件内容反序列化到map
+	var pwdMap map[string]string
+	err = json.Unmarshal(content, &pwdMap)
+	if err != nil {
+		panic(err)
+	}
+
+	// 判断 dispaly 是否包含"|"
+	if strings.Contains(dispaly, "|") {
+		// 直接尝试从 pwdMap 中获取口令
+		pwd, ok := pwdMap[dispaly]
+		if ok {
+			return pwd
+		} else {
+			panic(errors.New("口令不存在"))
+		}
+	} else {
+		// 将 dispaly 作为口令键值的前缀，遍历pwdMap查找所有匹配的口令
+		var pwdStrArr []string
+		for key, value := range pwdMap {
+			if strings.HasPrefix(key, dispaly) {
+				pwdStrArr = append(pwdStrArr, key+":"+value)
+			}
+		}
+		if len(pwdStrArr) == 0 {
+			panic(errors.New("口令不存在"))
+		} else {
+			// 将 pwdStrArr 拼接为字符串返回
+			return strings.Join(pwdStrArr, "\n")
+		}
+	}
 }
