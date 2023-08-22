@@ -154,7 +154,7 @@ func shuffleRuneArray(arr []rune) {
 
 // 读取PwdFileDir json文件内容，转为 map
 func readPwdFile() (map[string]string, error) {
-	var pwdMap map[string]string
+	pwdMap := make(map[string]string)
 
 	// 获取当前用户根目录
 	homeDir, err := os.UserHomeDir()
