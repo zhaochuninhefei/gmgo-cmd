@@ -51,7 +51,7 @@ func PwdCmd() *cobra.Command {
 	pwdCommand.Flags().IntVarP(&length, "length", "l", 0, "口令长度(至少为4)")
 	pwdCommand.Flags().IntVarP(&strength, "strength", "s", 0, "口令强度(1:大小写字母+数字, 2:大小写字母+数字+特殊符号, 默认:2)")
 	pwdCommand.Flags().StringVarP(&saveKey, "key", "k", "", "口令保存键值，格式: `用户名@目标域名`，如`testuser@test.com`")
-	pwdCommand.Flags().StringVarP(&display, "display", "d", "", "显示口令，包含`@`时严格匹配口令键值，不包含`@`时作为口令键值的后缀查找")
+	pwdCommand.Flags().StringVarP(&display, "display", "d", "", "显示口令，包含`@`时严格匹配口令键值，不包含`@`时作为口令键值的后缀查找，传入all时显示全部口令")
 	return pwdCommand
 }
 
@@ -228,6 +228,16 @@ func displayPwd(dispaly string) string {
 	err = json.Unmarshal(content, &pwdMap)
 	if err != nil {
 		panic(err)
+	}
+
+	// 判断 display 是否是 all, 注意忽略大小写
+	if strings.ToLower(dispaly) == "all" {
+		// 将 pwdMap 全部数据拼接为 key:value 并返回
+		var pwdStr string
+		for key, value := range pwdMap {
+			pwdStr += fmt.Sprintf("%s:%s\n", key, value)
+		}
+		return pwdStr
 	}
 
 	// 判断 dispaly 是否包含"@"
