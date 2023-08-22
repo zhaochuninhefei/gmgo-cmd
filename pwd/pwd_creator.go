@@ -2,9 +2,13 @@ package pwd
 
 import (
 	"crypto/rand"
+	"encoding/json"
 	"fmt"
 	"github.com/spf13/cobra"
+	"io/ioutil"
 	"math/big"
+	"os"
+	"path"
 	"strings"
 )
 
@@ -31,12 +35,14 @@ var pwdCommand = &cobra.Command{
 
 var length int
 var strength int
+var saveKey string
 
 // PwdCmd returns the Cobra Command for pwd
 //goland:noinspection GoNameStartsWithPackageName
 func PwdCmd() *cobra.Command {
 	pwdCommand.Flags().IntVarP(&length, "length", "l", 0, "口令长度(至少为4)")
 	pwdCommand.Flags().IntVarP(&strength, "strength", "s", 0, "口令强度(1:大小写字母+数字, 2:大小写字母+数字+特殊符号, 默认:2)")
+	pwdCommand.Flags().StringVarP(&saveKey, "key", "k", "", "口令保存键值，建议格式: `目标域名|用户名`，如`test.com|testuser`")
 	return pwdCommand
 }
 
@@ -44,7 +50,8 @@ const (
 	uppercaseLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	lowercaseLetters = "abcdefghijklmnopqrstuvwxyz"
 	digits           = "0123456789"
-	specialChars     = "~!@#$%^&_-+=|:;" // 去除了一些容易被误解或错误格式化的字符，比较全面的是 ~!@#$%^&*_-+=\|(){}[]:;"'<>,.?/`
+	specialChars     = "~!@#$%^&_-+=|:;"    // 去除了一些容易被误解或错误格式化的字符，比较全面的是 ~!@#$%^&*_-+=\|(){}[]:;"'<>,.?/`
+	pwdFileDir       = ".gmgo-cmd/pwd.json" // 口令保存文件相对路径
 )
 
 func GeneratePassword(length int, strength int) string {
@@ -91,7 +98,24 @@ func GeneratePassword(length int, strength int) string {
 	runeArray := []rune(initialPassword.String())
 	shuffleRuneArray(runeArray)
 
-	return string(runeArray)
+	pwdStr := string(runeArray)
+
+	// 判断是否传入了 key 参数
+	if saveKey != "" {
+		// 读取 PwdFileDir json文件内容，转为 map
+		pwdMap, err := readPwdFile()
+		if err != nil {
+			panic(err)
+		}
+		// 将当前口令保存到 pwdMap 中
+		pwdMap[saveKey] = pwdStr
+		// 将pwdMap写入PwdFileDir文件
+		err = writePwdFile(pwdMap)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return pwdStr
 }
 
 // 从字符集合中获取一个随机字符
@@ -112,4 +136,63 @@ func shuffleRuneArray(arr []rune) {
 		j, _ := rand.Int(rand.Reader, big.NewInt(int64(i+1)))
 		arr[i], arr[j.Int64()] = arr[j.Int64()], arr[i]
 	}
+}
+
+// 读取PwdFileDir json文件内容，转为 map
+func readPwdFile() (map[string]string, error) {
+	var pwdMap map[string]string
+
+	// 获取当前用户根目录
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return nil, err
+	}
+	filePath := path.Join(homeDir, pwdFileDir)
+	fileDir := path.Dir(filePath)
+
+	// 如果fileDir不存在，或不是目录，则创建对应目录
+	dirInfo, err := os.Stat(fileDir)
+	if os.IsNotExist(err) || !dirInfo.IsDir() {
+		if err = os.MkdirAll(fileDir, os.ModePerm); err != nil {
+			return nil, err
+		}
+	}
+
+	// 判断filePath是否存在且是文件
+	fileInfo, err := os.Stat(filePath)
+	if os.IsNotExist(err) || !fileInfo.Mode().IsRegular() {
+		return pwdMap, nil
+	}
+
+	// 读取PwdFileDir文件内容(json格式)
+	content, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+	// 将文件内容反序列化到map
+	err = json.Unmarshal(content, &pwdMap)
+	if err != nil {
+		return nil, err
+	}
+	return pwdMap, nil
+}
+
+//  将map内容写入PwdFileDir文件
+func writePwdFile(pwdMap map[string]string) error {
+	// 将map序列化成json格式
+	pwdJson, err := json.Marshal(pwdMap)
+	if err != nil {
+		return err
+	}
+	// 获取当前用户根目录
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+	// 将序列化后的json写入PwdFileDir文件
+	err = ioutil.WriteFile(path.Join(homeDir, pwdFileDir), pwdJson, 0644)
+	if err != nil {
+		return err
+	}
+	return nil
 }
