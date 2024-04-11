@@ -1,6 +1,8 @@
 module gitee.com/zhaochuninhefei/gmgo-cmd
 
-go 1.17
+go 1.22
+
+toolchain go1.22.2
 
 require (
 	gitee.com/zhaochuninhefei/gmgo v0.1.0
