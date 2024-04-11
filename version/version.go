@@ -8,7 +8,7 @@ import (
 const (
 	majorVersion string = "0" // 主版本号
 	minorVersion string = "0" // 次版本号
-	patchVersion string = "1" // 补丁版本号
+	patchVersion string = "2" // 补丁版本号
 )
 
 // VersionCmd returns the Cobra Command for Version
